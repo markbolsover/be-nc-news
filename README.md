@@ -13,6 +13,14 @@ Install npm and dependencies:
 - npm i
 - ensure node_modules is included in .gitignore
 
+Install express:
+- npm i express
+
 Run the following scripts:
 - npm run setup-dbs
 - npm run seed
+
+## Testing Setup
+
+Install supertest as a dev dependency:
+- npm i -D supertest
