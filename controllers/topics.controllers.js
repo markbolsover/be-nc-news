@@ -6,5 +6,8 @@ exports.getTopics = (req, res, next) => {
             res
                 .status(200)
                 .send({ topics: topicsArray });
+        })
+        .catch((err) => {
+            next(err);
         });
 };

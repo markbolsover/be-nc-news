@@ -30,10 +30,13 @@ describe('/api/topics', () => {
         });
     });
     describe('GET', () => {
-        test('404: client makes request with incorrect url', () => {
+        test('404: client makes request with invalid url', () => {
             return request(app)
-                .get('/api/topic')
+                .get('/api/elephant')
                 .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('route not found');
+                });
         });
     });
 });
