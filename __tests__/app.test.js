@@ -12,6 +12,19 @@ afterAll(() => {
     return db.end();
 });
 
+describe('/*', () => {
+    describe('GET', () => {
+        test('404: client makes request with invalid url', () => {
+            return request(app)
+                .get('/invalidurl')
+                .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('route not found');
+                });
+        });
+    });
+});
+
 describe('/api/topics', () => {
     describe('GET', () => {
         test('200: responds with an array of topic objects each with the properties of slug and description', () => {
@@ -26,14 +39,6 @@ describe('/api/topics', () => {
                         expect(topic).toHaveProperty('slug', expect.any(String));
                         expect(topic).toHaveProperty('description', expect.any(String));
                     });
-                })
-        });
-        test('404: client makes request with invalid url', () => {
-            return request(app)
-                .get('/api/topic')
-                .expect(404)
-                .then((res) => {
-                    expect(res.body.msg).toBe('route not found');
                 });
         });
     });
@@ -63,12 +68,32 @@ describe('/api/articles', () => {
                     expect(res.body.msg).toBe('article not found');
                 });
         });
-        test('400: client makes an invalid request, wrong parameter type - using string instead of a number', () => {
+        test('400: client makes an invalid request using wrong parameter type - string instead of number', () => {
             return request(app)
                 .get('/api/articles/Living in the shadow of a great man')
                 .expect(400)
                 .then((res) => {
                     expect(res.body.msg).toBe('bad request');
+                });
+        });
+    });
+});
+
+describe('/api/users', () => {
+    describe('GET', () => {
+        test('200: responds with an array of user objects each with the properties of username, name and avatar url', () => {
+            return request(app)
+                .get('/api/users')
+                .expect(200)
+                .then((res) => {
+                    expect(Array.isArray(res.body.users)).toBe(true);
+                    expect(Object.keys(res.body)).toEqual(["users"]);
+                    expect(res.body.users.length > 0).toBe(true);
+                    res.body.users.forEach(user => {
+                        expect(user).toHaveProperty('username', expect.any(String));
+                        expect(user).toHaveProperty('name', expect.any(String));
+                        expect(user).toHaveProperty('avatar_url', expect.any(String));
+                    });
                 });
         });
     });
