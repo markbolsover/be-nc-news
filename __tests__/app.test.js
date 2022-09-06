@@ -3,6 +3,7 @@ const db = require('../db/connection.js');
 const seed = require('../db/seeds/seed.js');
 const testData = require('../db/data/test-data');
 const request = require('supertest');
+const { convertTimestampToDate } = require('../db/seeds/utils.js');
 
 beforeEach(() => {
     return seed(testData);
@@ -74,6 +75,109 @@ describe('/api/articles', () => {
                 .expect(400)
                 .then((res) => {
                     expect(res.body.msg).toBe('bad request');
+                });
+        });
+    });
+    describe('PATCH', () => {
+        test('201: updates votes in the selected article by the correct amount when vote is positive', () => {
+            const updatedArticle = convertTimestampToDate({
+                "article_id": 3,
+                "title": "Eight pug gifs that remind me of mitch",
+                "topic": "mitch",
+                "author": "icellusedkars",
+                "body": "some gifs",
+                "created_at": 1604394720000,
+                "votes": 50,
+            });
+            return request(app)
+                .patch('/api/articles/3')
+                .send({ "inc_votes": 50 })
+                .expect(201)
+                .then(() => {
+                    return db
+                        .query('SELECT * FROM articles WHERE article_id=3;')
+                        .then((result) => {
+                            expect(result.rows[0]).toEqual(updatedArticle);
+                        });
+                });
+        });
+        test('201: updates votes in the selected article by the correct amount when vote is negative', () => {
+            const updatedArticle = convertTimestampToDate({
+                "article_id": 3,
+                "title": "Eight pug gifs that remind me of mitch",
+                "topic": "mitch",
+                "author": "icellusedkars",
+                "body": "some gifs",
+                "created_at": 1604394720000,
+                "votes": -50,
+            });
+            return request(app)
+                .patch('/api/articles/3')
+                .send({ "inc_votes": -50 })
+                .expect(201)
+                .then(() => {
+                    return db
+                        .query('SELECT * FROM articles WHERE article_id=3;')
+                        .then((result) => {
+                            expect(result.rows[0]).toEqual(updatedArticle);
+                        });
+                });
+        });
+        test('201: responds with the updated article when vote is positive', () => {
+            return request(app)
+                .patch('/api/articles/3')
+                .send({ "inc_votes": 50 })
+                .expect(201)
+                .then((res) => {
+                    expect(res.body.article).toHaveProperty('article_id', expect.any(Number));
+                    expect(res.body.article).toHaveProperty('title', 'Eight pug gifs that remind me of mitch');
+                    expect(res.body.article).toHaveProperty('topic', 'mitch');
+                    expect(res.body.article).toHaveProperty('author', 'icellusedkars');
+                    expect(res.body.article).toHaveProperty('body', 'some gifs');
+                    expect(res.body.article).toHaveProperty('created_at', '2020-11-03T09:12:00.000Z');
+                    expect(res.body.article).toHaveProperty('votes', 50);
+                });
+        });
+        test('201: responds with the updated article when vote is negative', () => {
+            return request(app)
+                .patch('/api/articles/3')
+                .send({ "inc_votes": -50 })
+                .expect(201)
+                .then((res) => {
+                    expect(res.body.article).toHaveProperty('article_id', expect.any(Number));
+                    expect(res.body.article).toHaveProperty('title', 'Eight pug gifs that remind me of mitch');
+                    expect(res.body.article).toHaveProperty('topic', 'mitch');
+                    expect(res.body.article).toHaveProperty('author', 'icellusedkars');
+                    expect(res.body.article).toHaveProperty('body', 'some gifs');
+                    expect(res.body.article).toHaveProperty('created_at', '2020-11-03T09:12:00.000Z');
+                    expect(res.body.article).toHaveProperty('votes', -50);
+                });
+        });
+        test('400: empty object in request receives error', () => {
+            return request(app)
+                .patch('/api/articles/3')
+                .send({})
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.msg).toBe('bad request');
+                });
+        });
+        test('400: request is in wrong format', () => {
+            return request(app)
+                .patch('/api/articles/3')
+                .send({ "inc_vote": 50 })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.msg).toBe('bad request');
+                });
+        });
+        test('404: client makes request for an id that does not exist', () => {
+            return request(app)
+                .patch('/api/articles/9999')
+                .send({ "inc_votes": 50 })
+                .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('article not found');
                 });
         });
     });
