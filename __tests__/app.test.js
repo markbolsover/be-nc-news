@@ -57,13 +57,13 @@ describe('/api/articles', () => {
         });
         test('404: client makes request for an id that does not exist', () => {
             return request(app)
-                .get('/api/articles/15')
+                .get('/api/articles/9999')
                 .expect(404)
                 .then((res) => {
                     expect(res.body.msg).toBe('article not found');
                 });
         });
-        test('400: client makes an invalid request, using title for query instead of id', () => {
+        test('400: client makes an invalid request, wrong parameter type - using string instead of a number', () => {
             return request(app)
                 .get('/api/articles/Living in the shadow of a great man')
                 .expect(400)

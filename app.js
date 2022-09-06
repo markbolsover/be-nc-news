@@ -1,13 +1,13 @@
 const express = require('express');
 const { getTopics } = require('./controllers/topics.controller.js');
 const { getArticleByID } = require('./controllers/articles.controller.js');
-const { errorHandler } = require('./error-handling.js');
+const { invalidRequest } = require('./controllers/errors.controller.js');
 
 const app = express();
 
 app.get('/api/topics', getTopics);
 app.get('/api/articles/:article_id', getArticleByID);
-app.all('/*', errorHandler);
+app.all('/*', invalidRequest);
 
 app.use((err, req, res, next) => {
     if (err.code === '22P02') {
