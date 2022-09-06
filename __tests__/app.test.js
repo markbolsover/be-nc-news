@@ -153,19 +153,19 @@ describe('/api/articles', () => {
                     expect(res.body.article).toHaveProperty('votes', -50);
                 });
         });
-        test('400: empty object in request receives error', () => {
+        test('400: request is in wrong format', () => {
             return request(app)
                 .patch('/api/articles/3')
-                .send({})
+                .send({ "inc_vote": 50 })
                 .expect(400)
                 .then((response) => {
                     expect(response.body.msg).toBe('bad request');
                 });
         });
-        test('400: request is in wrong format', () => {
+        test('400: request value is not a number', () => {
             return request(app)
                 .patch('/api/articles/3')
-                .send({ "inc_vote": 50 })
+                .send({ "inc_vote": 'fifty' })
                 .expect(400)
                 .then((response) => {
                     expect(response.body.msg).toBe('bad request');
