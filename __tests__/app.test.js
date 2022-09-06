@@ -12,7 +12,7 @@ afterAll(() => {
     return db.end();
 });
 
-describe('/*', () => {
+describe('general error handling', () => {
     describe('GET', () => {
         test('404: client makes request with invalid url', () => {
             return request(app)
