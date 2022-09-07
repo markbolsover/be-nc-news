@@ -47,18 +47,19 @@ describe('/api/topics', () => {
 
 describe('/api/articles', () => {
     describe('GET', () => {
-        test('200: responds with an article object with the correct properties', () => {
+        test('200: responds with an article object with the correct properties and comment count', () => {
             return request(app)
                 .get('/api/articles/5')
                 .expect(200)
                 .then((res) => {
-                    expect(res.body.article).toHaveProperty('article_id', expect.any(Number));
+                    expect(res.body.article).toHaveProperty('article_id', 5);
                     expect(res.body.article).toHaveProperty('title', 'UNCOVERED: catspiracy to bring down democracy');
                     expect(res.body.article).toHaveProperty('topic', 'cats');
                     expect(res.body.article).toHaveProperty('author', 'rogersop');
                     expect(res.body.article).toHaveProperty('body', 'Bastet walks amongst us, and the cats are taking arms!');
                     expect(res.body.article).toHaveProperty('created_at', '2020-08-03T13:14:00.000Z');
                     expect(res.body.article).toHaveProperty('votes', 0);
+                    expect(res.body.article).toHaveProperty('comment_count', 2);
                 });
         });
         test('404: client makes request for an id that does not exist', () => {
