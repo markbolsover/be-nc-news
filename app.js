@@ -2,7 +2,7 @@ const express = require('express');
 
 const { getTopics } = require('./controllers/topics.controller.js');
 const { getUsers } = require('./controllers/users.controller.js');
-const { getArticleByID, editVotes } = require('./controllers/articles.controller.js');
+const { getArticles, getArticleByID, editVotes } = require('./controllers/articles.controller.js');
 const { invalidRequest } = require('./controllers/errors.controller.js');
 
 const app = express();
@@ -11,6 +11,7 @@ app.use(express.json());
 
 app.get('/api/topics', getTopics);
 app.get('/api/users', getUsers);
+app.get('/api/articles', getArticles);
 app.get('/api/articles/:article_id', getArticleByID);
 app.patch('/api/articles/:article_id', editVotes);
 app.all('/*', invalidRequest);
