@@ -14,7 +14,7 @@ afterAll(() => {
 });
 
 describe('general error handling', () => {
-    describe('GET', () => {
+    describe('ANY', () => {
         test('404: client makes request with invalid url', () => {
             return request(app)
                 .get('/invalidurl')
@@ -47,7 +47,7 @@ describe('/api/topics', () => {
 
 describe('/api/articles', () => {
     describe('GET', () => {
-        test('200: responds with an article object with the correct properties and comment count', () => {
+        test('200: responds with an article object with the correct properties and comment count for the given id', () => {
             return request(app)
                 .get('/api/articles/5')
                 .expect(200)
@@ -60,6 +60,50 @@ describe('/api/articles', () => {
                     expect(res.body.article).toHaveProperty('created_at', '2020-08-03T13:14:00.000Z');
                     expect(res.body.article).toHaveProperty('votes', 0);
                     expect(res.body.article).toHaveProperty('comment_count', 2);
+                });
+        });
+        test('200: responds with an array of article objects with the correct properties and data types', () => {
+            return request(app)
+                .get('/api/articles')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.articles.length).toBeGreaterThan(0);
+                    res.body.articles.forEach((article) => {
+                        expect(article).toHaveProperty('author', expect.any(String));
+                        expect(article).toHaveProperty('title', expect.any(String));
+                        expect(article).toHaveProperty('article_id', expect.any(Number));
+                        expect(article).toHaveProperty('topic', expect.any(String));
+                        expect(article).toHaveProperty('created_at', expect.any(String));
+                        expect(article).toHaveProperty('votes', expect.any(Number));
+                        expect(article).toHaveProperty('comment_count', expect.any(Number));
+                    });
+                });
+        });
+        test('200: responds with an empty array when topic filter is valid but has no related articles yet', () => {
+            return request(app)
+                .get('/api/articles?topic=paper')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.articles).toEqual([]);
+                });
+        });
+        test('200: responds with an array of article objects sorted by date created in descending order', () => {
+            return request(app)
+                .get('/api/articles')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.articles).toBeSortedBy('created_at', { descending: true });
+                });
+        });
+        test('200: articles can be filtered by topic', () => {
+            return request(app)
+                .get('/api/articles?topic=mitch')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.articles.length).toBeGreaterThan(0);
+                    res.body.articles.forEach((article) => {
+                        expect(article.topic).toBe('mitch');
+                    });
                 });
         });
         test('404: client makes request for an id that does not exist', () => {
@@ -76,6 +120,14 @@ describe('/api/articles', () => {
                 .expect(400)
                 .then((res) => {
                     expect(res.body.msg).toBe('bad request');
+                });
+        });
+        test('404: client makes request for a topic that does not exist', () => {
+            return request(app)
+                .get('/api/articles?topic=dogs')
+                .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('topic not found');
                 });
         });
     });
@@ -130,7 +182,7 @@ describe('/api/articles', () => {
                 .send({ "inc_votes": 50 })
                 .expect(201)
                 .then((res) => {
-                    expect(res.body.article).toHaveProperty('article_id', expect.any(Number));
+                    expect(res.body.article).toHaveProperty('article_id', 3);
                     expect(res.body.article).toHaveProperty('title', 'Eight pug gifs that remind me of mitch');
                     expect(res.body.article).toHaveProperty('topic', 'mitch');
                     expect(res.body.article).toHaveProperty('author', 'icellusedkars');
@@ -145,7 +197,7 @@ describe('/api/articles', () => {
                 .send({ "inc_votes": -50 })
                 .expect(201)
                 .then((res) => {
-                    expect(res.body.article).toHaveProperty('article_id', expect.any(Number));
+                    expect(res.body.article).toHaveProperty('article_id', 3);
                     expect(res.body.article).toHaveProperty('title', 'Eight pug gifs that remind me of mitch');
                     expect(res.body.article).toHaveProperty('topic', 'mitch');
                     expect(res.body.article).toHaveProperty('author', 'icellusedkars');

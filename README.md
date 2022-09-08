@@ -24,3 +24,7 @@ Run the following scripts:
 
 Install supertest as a dev dependency:
 - npm i -D supertest
+
+Install jest-sorted as a dev dependency:
+- npm i -D jest-sorted
+- add jest-sorted to jest setupFilesAfterEnv configuration in package.json
