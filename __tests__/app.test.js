@@ -122,12 +122,6 @@ describe('/api/articles', () => {
                     expect(res.body.msg).toBe('topic not found');
                 });
         });
-
-
-
-
-
-
     });
     describe('PATCH', () => {
         test('201: updates votes in the selected article by the correct amount when vote is positive', () => {
