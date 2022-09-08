@@ -79,6 +79,14 @@ describe('/api/articles', () => {
                     });
                 });
         });
+        test('200: responds with an empty array when topic filter is valid but has no related articles yet', () => {
+            return request(app)
+                .get('/api/articles?topic=paper')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.articles).toEqual([]);
+                });
+        });
         test('200: responds with an array of article objects sorted by date created in descending order', () => {
             return request(app)
                 .get('/api/articles')
