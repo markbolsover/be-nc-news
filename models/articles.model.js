@@ -66,6 +66,20 @@ exports.selectArticleById = (articleId) => {
         });
 };
 
+exports.selectCommentsByArticleId = (articleId) => {
+    return db
+        .query(`SELECT comment_id, votes, created_at, author, body 
+        FROM comments 
+        WHERE article_id = $1;`, [articleId])
+        .then((result) => {
+            if (result.rows.length === 0) {
+                return Promise.reject({ status: 404, msg: 'article not found' });
+            } else {
+                return result.rows;
+            };
+        });
+};
+
 exports.updateVotes = (articleId, votes) => {
     if (votes > 0) {
         return db

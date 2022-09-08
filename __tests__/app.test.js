@@ -106,6 +106,21 @@ describe('/api/articles', () => {
                     });
                 });
         });
+        test('200: responds with an array of comment objects for the given id with the correct properties and data types', () => {
+            return request(app)
+                .get('/api/articles/5/comments')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.comments.length).toBeGreaterThan(0);
+                    res.body.comments.forEach((comment) => {
+                        expect(comment).toHaveProperty('comment_id', expect.any(Number));
+                        expect(comment).toHaveProperty('votes', expect.any(Number));
+                        expect(comment).toHaveProperty('created_at', expect.any(String));
+                        expect(comment).toHaveProperty('author', expect.any(String));
+                        expect(comment).toHaveProperty('body', expect.any(String));
+                    });
+                });
+        });
         test('404: client makes request for an id that does not exist', () => {
             return request(app)
                 .get('/api/articles/9999')
@@ -130,7 +145,16 @@ describe('/api/articles', () => {
                     expect(res.body.msg).toBe('topic not found');
                 });
         });
+        test('404: client makes request for an id that does not exist', () => {
+            return request(app)
+                .get('/api/articles/9999/comments')
+                .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('article not found');
+                });
+        });
     });
+
     describe('PATCH', () => {
         test('201: updates votes in the selected article by the correct amount when vote is positive', () => {
             const updatedArticle = convertTimestampToDate({
