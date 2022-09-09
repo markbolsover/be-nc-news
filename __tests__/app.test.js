@@ -145,12 +145,28 @@ describe('/api/articles', () => {
                     expect(res.body.msg).toBe('topic not found');
                 });
         });
-        test('404: client makes request for an id that does not exist', () => {
+        test('404: client makes request for comments for an id that does not exist', () => {
             return request(app)
                 .get('/api/articles/9999/comments')
                 .expect(404)
                 .then((res) => {
                     expect(res.body.msg).toBe('article not found');
+                });
+        });
+        test('400: client makes a request for comments for an invalid article id - string instead of number', () => {
+            return request(app)
+                .get('/api/articles/dogs/comments')
+                .expect(400)
+                .then((res) => {
+                    expect(res.body.msg).toBe('bad request');
+                });
+        });
+        test('404: client makes a request for a valid article but it has no comments', () => {
+            return request(app)
+                .get('/api/articles/2/comments')
+                .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('the selected article does not have any comments');
                 });
         });
     });
