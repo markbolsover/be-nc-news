@@ -1,4 +1,4 @@
-const { selectArticles, selectArticleById, selectCommentsByArticleId, updateVotes } = require('../models/articles.model.js');
+const { selectArticles, selectArticleById, selectCommentsByArticleId, insertComment, updateVotes } = require('../models/articles.model.js');
 
 exports.getArticles = (req, res, next) => {
     const topic = req.query.topic;
@@ -27,6 +27,19 @@ exports.getCommentsByArticleId = (req, res, next) => {
     selectCommentsByArticleId(articleId)
         .then((commentData) => {
             res.status(200).send({ comments: commentData });
+        })
+        .catch((err) => {
+            next(err);
+        });
+};
+
+exports.addComment = (req, res, next) => {
+    const articleId = req.params.article_id;
+    const commentUsername = req.body.username;
+    const commentBody = req.body.body;
+    insertComment(articleId, commentUsername, commentBody)
+        .then((comment) => {
+            res.status(201).send({ comment: comment });
         })
         .catch((err) => {
             next(err);

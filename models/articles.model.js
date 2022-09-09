@@ -1,5 +1,4 @@
 const db = require('../db/connection.js');
-const articles = require('../db/data/test-data/articles.js');
 
 exports.selectArticles = (topic) => {
     let topics = [];
@@ -106,6 +105,35 @@ exports.selectCommentsByArticleId = (articleId) => {
             } else {
                 return result.rows;
             };
+        });
+};
+
+exports.insertComment = (articleId, commentUsername, commentBody) => {
+    let articleIdsFromArticles = [];
+    const articleIdAsNumber = Number(articleId);
+    return db
+        .query(`SELECT article_id
+                FROM articles;`)
+        .then((result) => {
+            result.rows.forEach((article) => {
+                articleIdsFromArticles.push(article.article_id);
+            });
+        })
+        .then(() => {
+            if (!articleIdsFromArticles.includes(articleIdAsNumber)) {
+                return Promise.reject({ status: 404, msg: 'article not found' });
+            } else if (commentUsername === undefined || commentBody === undefined || typeof commentUsername !== 'string' || typeof commentBody !== 'string') {
+                return Promise.reject({ status: 400, msg: 'bad request' });
+            };
+        })
+        .then(() => {
+            return db
+                .query(`INSERT INTO comments (body, author, article_id)
+                        VALUES ($1, $2, $3)
+                        RETURNING *;`, [commentBody, commentUsername, articleIdAsNumber])
+        })
+        .then((result) => {
+            return result.rows[0];
         });
 };
 
