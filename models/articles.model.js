@@ -1,4 +1,5 @@
 const db = require('../db/connection.js');
+const articles = require('../db/data/test-data/articles.js');
 
 exports.selectArticles = (topic) => {
     let topics = [];
@@ -62,6 +63,48 @@ exports.selectArticleById = (articleId) => {
                 return Promise.reject({ status: 404, msg: 'article not found' });
             } else {
                 return result.rows[0];
+            };
+        });
+};
+
+exports.selectCommentsByArticleId = (articleId) => {
+    let articlesWithComments = [];
+    let articleIdsFromArticles = [];
+    return db
+        .query(`SELECT article_id 
+                FROM comments;`)
+        .then((result) => {
+            result.rows.forEach((comment) => {
+                articlesWithComments.push(comment.article_id);
+            });
+        })
+        .then(() => {
+            return db
+                .query(`SELECT article_id
+                    FROM articles;`);
+        })
+        .then((result) => {
+            result.rows.forEach((article) => {
+                articleIdsFromArticles.push(article.article_id);
+            });
+        })
+        .then(() => {
+            const articleIdAsNumber = Number(articleId);
+            if (!articlesWithComments.includes(articleIdAsNumber) && articleIdsFromArticles.includes(articleIdAsNumber)) {
+                return Promise.reject({ status: 404, msg: 'the selected article does not have any comments' });
+            };
+        })
+        .then(() => {
+            return db
+                .query(`SELECT comment_id, votes, created_at, author, body 
+                    FROM comments 
+                    WHERE article_id = $1;`, [articleId]);
+        })
+        .then((result) => {
+            if (result.rows.length === 0) {
+                return Promise.reject({ status: 404, msg: 'article not found' });
+            } else {
+                return result.rows;
             };
         });
 };
