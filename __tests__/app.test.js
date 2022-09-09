@@ -52,8 +52,6 @@ describe('/api/users', () => {
                 .get('/api/users')
                 .expect(200)
                 .then((res) => {
-                    expect(Array.isArray(res.body.users)).toBe(true);
-                    expect(Object.keys(res.body)).toEqual(["users"]);
                     expect(res.body.users.length > 0).toBe(true);
                     res.body.users.forEach(user => {
                         expect(user).toHaveProperty('username', expect.any(String));
@@ -294,29 +292,7 @@ describe('/api/articles', () => {
         });
     });
     describe('POST', () => {
-        test('201: adds a comment to comments with the correct article id', () => {
-            const comment = {
-                "username": "icellusedkars",
-                "body": "Needs more pug gifs",
-            };
-            return request(app)
-                .post('/api/articles/3/comments')
-                .send(comment)
-                .expect(201)
-                .then(() => {
-                    return db
-                        .query('SELECT * FROM comments WHERE comment_id=19;')
-                        .then((result) => {
-                            expect(result.rows[0].comment_id).toEqual(19);
-                            expect(result.rows[0].body).toEqual('Needs more pug gifs');
-                            expect(result.rows[0].votes).toEqual(expect.any(Number));
-                            expect(result.rows[0].author).toEqual('icellusedkars');
-                            expect(result.rows[0].article_id).toEqual(3);
-                            expect(result.rows[0].created_at).toEqual(expect.any(Object));
-                        });
-                });
-        });
-        test('201: responds with the added comment', () => {
+        test('201: adds a comment to comments with the correct article id and responds with the added comment', () => {
             const comment = {
                 "username": "icellusedkars",
                 "body": "Needs more pug gifs",
@@ -332,6 +308,16 @@ describe('/api/articles', () => {
                     expect(res.body.comment).toHaveProperty('author', 'icellusedkars');
                     expect(res.body.comment).toHaveProperty('article_id', 3);
                     expect(res.body.comment).toHaveProperty('created_at', expect.any(String));
+                    return db
+                        .query('SELECT * FROM comments WHERE comment_id=19;')
+                })
+                .then((result) => {
+                    expect(result.rows[0].comment_id).toEqual(19);
+                    expect(result.rows[0].body).toEqual('Needs more pug gifs');
+                    expect(result.rows[0].votes).toEqual(0);
+                    expect(result.rows[0].author).toEqual('icellusedkars');
+                    expect(result.rows[0].article_id).toEqual(3);
+                    expect(result.rows[0].created_at).toEqual(expect.any(Object));
                 });
         });
         test('400: request is in wrong format - wrong object keys in request', () => {
