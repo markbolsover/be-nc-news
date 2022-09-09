@@ -45,6 +45,24 @@ describe('/api/topics', () => {
     });
 });
 
+describe('/api/users', () => {
+    describe('GET', () => {
+        test('200: responds with an array of user objects each with the properties of username, name and avatar url', () => {
+            return request(app)
+                .get('/api/users')
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.users.length > 0).toBe(true);
+                    res.body.users.forEach(user => {
+                        expect(user).toHaveProperty('username', expect.any(String));
+                        expect(user).toHaveProperty('name', expect.any(String));
+                        expect(user).toHaveProperty('avatar_url', expect.any(String));
+                    });
+                });
+        });
+    });
+});
+
 describe('/api/articles', () => {
     describe('GET', () => {
         test('200: responds with an article object with the correct properties and comment count for the given id', () => {
@@ -170,7 +188,6 @@ describe('/api/articles', () => {
                 });
         });
     });
-
     describe('PATCH', () => {
         test('201: updates votes in the selected article by the correct amount when vote is positive', () => {
             const updatedArticle = convertTimestampToDate({
@@ -274,24 +291,75 @@ describe('/api/articles', () => {
                 });
         });
     });
-});
-
-describe('/api/users', () => {
-    describe('GET', () => {
-        test('200: responds with an array of user objects each with the properties of username, name and avatar url', () => {
+    describe('POST', () => {
+        test('201: adds a comment to comments with the correct article id and responds with the added comment', () => {
+            const comment = {
+                "username": "icellusedkars",
+                "body": "Needs more pug gifs",
+            };
             return request(app)
-                .get('/api/users')
-                .expect(200)
+                .post('/api/articles/3/comments')
+                .send(comment)
+                .expect(201)
                 .then((res) => {
-                    expect(Array.isArray(res.body.users)).toBe(true);
-                    expect(Object.keys(res.body)).toEqual(["users"]);
-                    expect(res.body.users.length > 0).toBe(true);
-                    res.body.users.forEach(user => {
-                        expect(user).toHaveProperty('username', expect.any(String));
-                        expect(user).toHaveProperty('name', expect.any(String));
-                        expect(user).toHaveProperty('avatar_url', expect.any(String));
-                    });
+                    expect(res.body.comment).toHaveProperty('comment_id', expect.any(Number));
+                    expect(res.body.comment).toHaveProperty('body', 'Needs more pug gifs');
+                    expect(res.body.comment).toHaveProperty('votes', expect.any(Number));
+                    expect(res.body.comment).toHaveProperty('author', 'icellusedkars');
+                    expect(res.body.comment).toHaveProperty('article_id', 3);
+                    expect(res.body.comment).toHaveProperty('created_at', expect.any(String));
+                    return db
+                        .query('SELECT * FROM comments WHERE comment_id=19;')
+                })
+                .then((result) => {
+                    expect(result.rows[0].comment_id).toEqual(19);
+                    expect(result.rows[0].body).toEqual('Needs more pug gifs');
+                    expect(result.rows[0].votes).toEqual(0);
+                    expect(result.rows[0].author).toEqual('icellusedkars');
+                    expect(result.rows[0].article_id).toEqual(3);
+                    expect(result.rows[0].created_at).toEqual(expect.any(Object));
+                });
+        });
+        test('400: request is in wrong format - wrong object keys in request', () => {
+            const comment = {
+                "author": "icellusedkars",
+                "body": 9,
+                "created_at": 1586179020000,
+            };
+            return request(app)
+                .post('/api/articles/3/comments')
+                .send(comment)
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.msg).toBe('bad request');
+                });
+        });
+        test('400: request is in wrong format - number instead of string', () => {
+            const comment = {
+                "username": "icellusedkars",
+                "body": 9,
+            };
+            return request(app)
+                .post('/api/articles/3/comments')
+                .send(comment)
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.msg).toBe('bad request');
+                });
+        });
+        test('404: client makes request for an id that does not exist', () => {
+            const comment = {
+                "username": "icellusedkars",
+                "body": "Needs more pug gifs",
+            };
+            return request(app)
+                .post('/api/articles/9999/comments')
+                .send(comment)
+                .expect(404)
+                .then((res) => {
+                    expect(res.body.msg).toBe('article not found');
                 });
         });
     });
 });
+
