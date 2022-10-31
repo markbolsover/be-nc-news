@@ -1,9 +1,11 @@
 const express = require("express");
 const apiRouter = require("./routes/api-router");
 const { invalidRequest } = require("./controllers/errors.controller.js");
+const cors = require("cors");
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use("/api", apiRouter);
 app.all("/*", invalidRequest);
